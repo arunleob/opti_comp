@@ -66,3 +66,25 @@ def test_complementarity_transcription_and_indexing():
     with pytest.raises(ValueError, match="same number of scalar elements"):
         complementarity(empty_opti, ca.DM.zeros(2), ca.DM.zeros(3))
     assert not hasattr(empty_opti, "_cc_vars")
+
+@pytest.mark.parametrize(
+    "left_var,right_var,expected_added",
+    [
+        (False, False, 2),
+        (True,  False, 1),
+        (False, True,  1),
+        (True,  True,  0),
+    ],
+)
+def test_slack_flags_control_auxiliary_variables(left_var, right_var, expected_added):
+    opti = ca.Opti()
+
+    x = opti.variable()
+    y = opti.variable()
+    opti.minimize(x**2 + y**2)
+
+    nx_before = opti.nx
+
+    complementarity(opti, x, y, left_var=left_var, right_var=right_var)
+
+    assert opti.nx == nx_before + expected_added
