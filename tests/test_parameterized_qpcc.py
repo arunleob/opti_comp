@@ -23,11 +23,11 @@ def test_parameterized_qpcc():
     opti.minimize((x - a)**2 + (y - b)**2 + (z - 1)**2)
 
     # Complementarity
-    complementarity(opti, x, y)
+    complementarity(opti, x, y, left_var = True, right_var = True)
     solver, lbx = construct_ccopt_solver(opti)
 
     # Make sure complementarity bounds are correct
-    np.testing.assert_array_equal(lbx, [-np.inf, -np.inf, -np.inf, 0, 0])
+    np.testing.assert_array_equal(lbx, [0, 0, -np.inf])
 
     # Function for solution values
     solution_values = ca.Function("solution_values", [opti.x], [ca.vertcat(x, y, z), opti.g])
@@ -46,7 +46,7 @@ def test_parameterized_qpcc():
         xyz = np.array(xyz).ravel()
         np.testing.assert_allclose(xyz, [*expected, -1], atol=1e-5)
 
-        # Check slacks are positive and complementarity holds
+        # Check x and y are positive and complementarity holds
         assert np.min(xyz[:2]) >= -1e-6
         assert abs(xyz[0] * xyz[1]) < 1e-6
 

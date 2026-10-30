@@ -3,10 +3,13 @@
 import casadi as ca
 
 
-def complementarity(opti, left, right):
+def complementarity(opti, left, right, left_var = False, right_var = False):
     """Implements complementarity 0 <= left ⟂ right >= 0 by defining slack variables 
     for each side vl = left, vr = right, and recording them to be used to construct 
     complementarity pairs after the problem construction is completed. 
+
+    If left or right are already opti variables, you can use left_var = True and/or right_var = True
+    to use them directly instead of creating slacks
     
     Nonnegativity is enforced through lbx returned by construct_ccopt_solver
     """
@@ -17,10 +20,17 @@ def complementarity(opti, left, right):
         raise ValueError("Complementarity sides must have the same number of scalar elements.")
 
     # Create slack variables and their inequalities
-    vl = opti.variable(left.numel())
-    vr = opti.variable(right.numel())
-    opti.subject_to(vl == left)
-    opti.subject_to(vr == right)
+    if left_var:
+        vl = left
+    else:
+        vl = opti.variable(left.numel())
+        opti.subject_to(vl == left)
+
+    if right_var:
+        vr = right
+    else:
+        vr = opti.variable(right.numel())
+        opti.subject_to(vr == right)
 
     # Record variable pair for determining indices for cc_pairs later
     # This has to be done after the problem construction is completed because indices can change

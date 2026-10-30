@@ -5,7 +5,8 @@ There are two pieces
 - Use complementarity(opti, left, right) to add constraints of the form 0 <= left ⟂ right >= 0 
 - Use construct_ccopt_solver(opti, opt=None) to initialize the solver (in this case CCOpt)
 
-Internally, complementarity defines slack variables for each side and records them. Then construct_ccopt_solver finds the indices corresponding to those vectors in opti.x and records them as cc_pairs for the solver, as well as producing lbx that has 0 for the lower bounds for those slacks.
+Internally, complementarity defines slack variables for each side and records them. Then construct_ccopt_solver finds the indices corresponding to those vectors in opti.x and records them as cc_pairs for the solver, as well as producing lbx that has 0 for the lower bounds for those slacks. If left or right is already a registered opti variable, you can avoid creating
+a redundant slack by passing optional args left_var = True or right_var = True respectively.
 
 ## Installation and environment
 
@@ -36,6 +37,8 @@ opti.minimize((x - a)**2 + (y - b)**2)
 
 # Add complementarity between x and y, 0 <= left ⟂ right >= 0 (creates slack variables stored in opti._cc_var)
 complementarity(opti, x, y) 
+# Optionally can do complementarity(opti, x, y, left_var = True, right_var = True) if either
+# is a registered opti.variable to avoid creating a slack
 
 # Construct the solver (uses opti._cc_var to find complementarity indices and passes them to CCOpt).
 solver, lbx = construct_ccopt_solver(opti)
